@@ -5,6 +5,13 @@ using System.Linq;
 
 public class Player : MonoBehaviour
 {
+
+    //SINGLETON
+    public static Player playerInstance { get; private set; }
+
+    // 
+
+
     public float AxV, AxH, speed, unabledSpeed, enabledSpeed, stunbreak;
     public bool isHiding, canMove, died, doTheySeeMe;
     Rigidbody2D RB2D;
@@ -44,6 +51,15 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
+        if (playerInstance != null && playerInstance != this)
+        {
+            Destroy(gameObject);  // Destroy duplicate instances
+            return;
+        }
+
+
+
+
         died = false;
         canMove = true;
         RB2D = GetComponent<Rigidbody2D>();
@@ -56,13 +72,19 @@ public class Player : MonoBehaviour
         doTheySeeMe = false;
     }
 
+   
+
+    private void Start()
+    {
+        DontDestroyOnLoad(gameObject);
+
+    }
     void Update()
     {
         counter += Time.deltaTime;
 
         AxV = Input.GetAxisRaw("Vertical");
         AxH = Input.GetAxisRaw("Horizontal");
-        print(AxV);
         if(AxH < 0)
         {
             SR.flipX = true;

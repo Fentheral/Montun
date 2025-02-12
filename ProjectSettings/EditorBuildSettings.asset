@@ -12,10 +12,10 @@ EditorBuildSettings:
     path: Assets/Scenes/Cinematics.unity
     guid: 2ce138a6ead967a4a970f0547f4e0917
   - enabled: 1
-    path: Assets/DemoScene/Test Field.unity
+    path: Assets/Scenes/Test Field.unity
     guid: c9fb30afe91d5c24fba354ee74ad9dfa
   - enabled: 1
-    path: Assets/DemoScene/DEMO.unity
+    path: Assets/Scenes/DEMO.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
     path: Assets/Scenes/GameOver.unity
