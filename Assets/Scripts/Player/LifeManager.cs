@@ -12,9 +12,9 @@ public class LifeManager : MonoBehaviour
 
     public RectTransform lifeUIRectTransform;
     public float scaleFactor = 0.9f;
-
+    public static LifeManager Instance;
     [SerializeField] int life;
-    [SerializeField] int currLife;
+    public int currLife;
 
 
     //////////// Animaciones ////////////////
@@ -23,6 +23,14 @@ public class LifeManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
         currLife = life;
     }
 
