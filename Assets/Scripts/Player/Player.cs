@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour,ICommand
 {
 
     //SINGLETON
@@ -35,6 +35,13 @@ public class Player : MonoBehaviour
     /////////////////////////////////////////
 
 
+    /////////Varibles para el Salto/////////
+    public bool jumpEnabled;
+    public float jumpCooldown;
+    public float counterJump;
+
+    /////////////////////////////////////////
+
     //////////// Animaciones ////////////////
     public Animator enemyAnimator;
     public Animator playerAnimator;
@@ -53,10 +60,11 @@ public class Player : MonoBehaviour
     {
         if (playerInstance != null && playerInstance != this)
         {
-            Destroy(gameObject);  // Destroy duplicate instances
+            Destroy(gameObject);
             return;
         }
 
+        playerInstance = this;
 
 
 
@@ -69,6 +77,7 @@ public class Player : MonoBehaviour
         isHiding = false;
         stealthEnabled = false;
         counter = 20;
+        counterJump = 10;
         doTheySeeMe = false;
     }
 
@@ -82,6 +91,7 @@ public class Player : MonoBehaviour
     void Update()
     {
         counter += Time.deltaTime;
+        counterJump+= Time.deltaTime;
 
         AxV = Input.GetAxisRaw("Vertical");
         AxH = Input.GetAxisRaw("Horizontal");
@@ -121,6 +131,7 @@ public class Player : MonoBehaviour
         Hide();
         StealthModeEnter();
         Walk();
+        Jump();
 
 
     }
@@ -225,7 +236,6 @@ public class Player : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Mouse1) && counter >= stealthCooldown && canMove && stealthEnabled && died == false )
         {
-            
             Cones1 = GameObject.FindGameObjectsWithTag("Normal Cone").ToList();
             foreach (GameObject cone in Cones1)
             {
@@ -235,10 +245,15 @@ public class Player : MonoBehaviour
             }
             counter = 0;
             StartCoroutine(StealthModeExit());
-
         }
-
-
+    }
+    private void Jump()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && counterJump >= jumpCooldown && canMove && jumpEnabled && died == false)
+        {
+            Debug.Log("presione Salto");
+            counterJump = 0;
+        }
     }
     IEnumerator StealthModeExit()
     {
@@ -258,4 +273,28 @@ public class Player : MonoBehaviour
             Instantiate(scratch, scratchSpawn);
         }
     }
+
+    public void Execute()
+    {
+        throw new System.NotImplementedException();
+    }
 }
+/*ToDo
+ *deshabilitar los controles cuando estas en cinematica
+ *Bloquear los demas controles
+ *Deshabilitar las "hidden walls"
+ *1 Verificar si el player esta parado en un jump point 
+ *1 Verificar si el player esta mirando en la direccion correcta
+ *1 Transportarlo con la animacion de salto
+ *2 Moverse en direccion a la cual estoy faceando
+ *2 Chocar contra objetos solidos sin buggearse
+ *Rehabilitar controles
+ *
+ Done
+ *Iniciar cooldown
+ *Verificar si tengo el cooldown disponible
+ *Verificar si tengo la habilidad aprendida
+ *Activar la habilidad de salto
+ *Tomar el input
+ 
+ */

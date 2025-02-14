@@ -14,7 +14,6 @@ public class Shout : MonoBehaviour
 
     public void UnableImg()
     {
-        print("imagenDesabilitada");
         img.enabled = false;
     }
 

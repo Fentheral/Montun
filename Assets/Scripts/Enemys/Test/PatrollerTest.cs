@@ -194,7 +194,6 @@ public class PatrollerTest : MonoBehaviour
         {
             nextIndex = 0;
         } 
-        print(this.name+" "+waypoints[nextIndex]);
         return waypoints[nextIndex];
     }
 
