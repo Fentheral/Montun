@@ -14,8 +14,8 @@ public class Player : MonoBehaviour,ICommand
 
     public float AxV, AxH, speed, unabledSpeed, enabledSpeed, stunbreak;
     public bool isHiding, canMove, died, doTheySeeMe;
-    Rigidbody2D RB2D;
-    SpriteRenderer SR;
+    public Rigidbody2D RB2D;
+    public SpriteRenderer SR;
     Vector2 dir;
     public Color newColor;
     public GameObject bulletPrefab;
@@ -54,6 +54,7 @@ public class Player : MonoBehaviour,ICommand
     public event CharacterSounds OnWalk;
     public event CharacterSounds OnStunBreak;
     public float walkCounter, footstepInterval;
+  
 
 
     private void Awake()
@@ -130,7 +131,7 @@ public class Player : MonoBehaviour,ICommand
 
         Hide();
         StealthModeEnter();
-        Walk();
+        InputHandler.HandleInput(this, dir);
         Jump();
 
 
@@ -140,54 +141,59 @@ public class Player : MonoBehaviour,ICommand
     {
     }
 
-    void Walk()
+    public void Walk(Vector2 direction)
     {
-        if (died == false)
+        if (died) return;
+
+        dir = direction.normalized;
+
+        if (dir != Vector2.zero)
         {
-            if (dir != Vector2.zero)
+            if (walkCounter >= footstepInterval)
             {
-                if ((dir!=Vector2.zero) && walkCounter >= footstepInterval)
-                {
-                    OnWalk?.Invoke();
-                    walkCounter = 0;
-                    walkCounter += Time.deltaTime;
-                }
-                RB2D.AddForce(dir * speed * Time.deltaTime, ForceMode2D.Impulse);
-                playerAnimator.SetBool("isMoving", true);
+                OnWalk?.Invoke();
+                walkCounter = 0;
             }
-            else
-            {
-                playerAnimator.SetBool("isMoving", false);
-                switch (lastDir[lastInput])
-                {
-                    case "Down":
-                        playerAnimator.SetFloat("IdleDir", 0);
-                        break;
-                    case "Up":
-                        playerAnimator.SetFloat("IdleDir", 1);
-                        break;
-                    case "Left":
-                        playerAnimator.SetFloat("IdleDir", 2);
-                        break;
-                    case "Right":
-                        playerAnimator.SetFloat("IdleDir", 3);
-                        break;
-                    case "UpLeft":
-                        playerAnimator.SetFloat("IdleDir", 4);
-                        break;
-                    case "UpRight":
-                        playerAnimator.SetFloat("IdleDir", 5);
-                        break;
-                    case "DownLeft":
-                        playerAnimator.SetFloat("IdleDir", 6);
-                        break;
-                    case "DownRight":
-                        playerAnimator.SetFloat("IdleDir", 7);
-                        break;
-                }
-            }
+
+            RB2D.AddForce(dir * speed * Time.deltaTime, ForceMode2D.Impulse);
+            playerAnimator.SetBool("isMoving", true);
         }
-       
+        else
+        {
+            playerAnimator.SetBool("isMoving", false);
+            SetIdleAnimation();
+        }
+    }
+
+    private void SetIdleAnimation()
+    {
+        switch (lastDir[lastInput])
+        {
+            case "Down":
+                playerAnimator.SetFloat("IdleDir", 0);
+                break;
+            case "Up":
+                playerAnimator.SetFloat("IdleDir", 1);
+                break;
+            case "Left":
+                playerAnimator.SetFloat("IdleDir", 2);
+                break;
+            case "Right":
+                playerAnimator.SetFloat("IdleDir", 3);
+                break;
+            case "UpLeft":
+                playerAnimator.SetFloat("IdleDir", 4);
+                break;
+            case "UpRight":
+                playerAnimator.SetFloat("IdleDir", 5);
+                break;
+            case "DownLeft":
+                playerAnimator.SetFloat("IdleDir", 6);
+                break;
+            case "DownRight":
+                playerAnimator.SetFloat("IdleDir", 7);
+                break;
+        }
     }
 
     public void Hide()
