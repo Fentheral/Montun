@@ -57,7 +57,7 @@ public class Player : MonoBehaviour,ICommand
   
 
 
-    private void Awake()
+    public void Awake()
     {
         if (playerInstance != null && playerInstance != this)
         {
@@ -81,9 +81,6 @@ public class Player : MonoBehaviour,ICommand
         counterJump = 10;
         doTheySeeMe = false;
     }
-
-   
-
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
@@ -93,39 +90,59 @@ public class Player : MonoBehaviour,ICommand
     {
         counter += Time.deltaTime;
         counterJump+= Time.deltaTime;
+        walkCounter += Time.deltaTime;
 
-        AxV = Input.GetAxisRaw("Vertical");
-        AxH = Input.GetAxisRaw("Horizontal");
-        if(AxH < 0)
+        
+
+        //Para el Idle, por ahora es provisional 
+        if (canMove == true)
         {
-            SR.flipX = true;
+            AxV = Input.GetAxisRaw("Vertical");
+            AxH = Input.GetAxisRaw("Horizontal");
+            if (AxH < 0)
+            {
+                SR.flipX = true;
+            }
+            else
+            {
+                SR.flipX = false;
+            }
+            if (AxH < 0 && AxV == 0)
+            {
+                lastInput = 3;
+            }
+            else if (AxH > 0 && AxV == 0)
+            {
+                lastInput = 2;
+            }
+            else if (AxH == 0 && AxV < 0)
+            {
+                lastInput = 1;
+            }
+            else if (AxH == 0 && AxV > 0)
+            {
+                lastInput = 0;
+            }
         }
         else
         {
-            SR.flipX = false;
+            playerAnimator.SetBool("isMoving", false);
+            return;
         }
-
-        //Para el Idle, por ahora es provisional 
-        if(AxH < 0 && AxV == 0)
-        {
-            lastInput = 3;
-        }else if (AxH > 0 && AxV == 0)
-        {
-            lastInput = 2;
-        }else if (AxH == 0 && AxV < 0)
-        {
-            lastInput = 1;
-        }else if (AxH == 0 && AxV > 0)
-        {
-            lastInput = 0;
-        }
-
-        walkCounter += Time.deltaTime;
 
         playerAnimator.SetFloat("X",AxH);
         playerAnimator.SetFloat("Y",AxV);
 
-        dir = new Vector2(AxH, AxV).normalized;
+        if (AxH == 0 && AxV==0)
+        {
+            dir = Vector2.zero;
+
+        }
+        else
+        {
+            dir = new Vector2(AxH, AxV).normalized;
+
+        }
         //aca lo solucione gato
         BreakStun();
 
@@ -151,17 +168,19 @@ public class Player : MonoBehaviour,ICommand
         {
             if (walkCounter >= footstepInterval)
             {
+
                 OnWalk?.Invoke();
                 walkCounter = 0;
             }
 
             RB2D.AddForce(dir * speed * Time.deltaTime, ForceMode2D.Impulse);
             playerAnimator.SetBool("isMoving", true);
+
         }
         else
         {
             playerAnimator.SetBool("isMoving", false);
-            SetIdleAnimation();
+             SetIdleAnimation();
         }
     }
 
@@ -253,7 +272,7 @@ public class Player : MonoBehaviour,ICommand
             StartCoroutine(StealthModeExit());
         }
     }
-    private void Jump()
+    public void Jump()
     {
         if (Input.GetKeyDown(KeyCode.Space) && counterJump >= jumpCooldown && canMove && jumpEnabled && died == false)
         {

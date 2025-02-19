@@ -91,6 +91,7 @@ public abstract class abilityEnabler : MonoBehaviour
         animator.SetBool("FadeOut", false);
         animator.SetBool("FadeIn", true);
         player.isHiding = false;
+
         Destroy(gameObject);
     }
 }

@@ -17,14 +17,18 @@ public class jumpEnable : abilityEnabler
         {
             if (Input.GetKeyDown(KeyCode.E) && hasCinematicStarted == false)
             {
-                Debug.Log(1);
+                
                 StartCoroutine(FadeIn());
                 Player.playerInstance.jumpEnabled = true;
+                Player.playerInstance.canMove = false;
+
 
             }
             if (Input.GetKeyDown(KeyCode.Mouse0) && Player.playerInstance.jumpEnabled == true)
             {
                 StartCoroutine(FadeOut());
+                Player.playerInstance.canMove = true;
+
             }
         }
     }
