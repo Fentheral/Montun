@@ -24,10 +24,7 @@ public class InputHandler : MonoBehaviour
     {
         
 
-        walkCounter += Time.deltaTime;
-        _player.SR.flipX = AxH < 0;
         
-        UpdateLastInput();
 
         
         // Otras mecánicas
@@ -36,23 +33,19 @@ public class InputHandler : MonoBehaviour
         //StealthModeEnter();
     }
 
-    public  void UpdateLastInput()
-    {
-        if (AxH < 0 && AxV == 0) lastInput = 3;
-        else if (AxH > 0 && AxV == 0) lastInput = 2;
-        else if (AxH == 0 && AxV < 0) lastInput = 1;
-        else if (AxH == 0 && AxV > 0) lastInput = 0;
-    }
+   
     public static void HandleInput(Player player, Vector2 movementDirection)
     {
-        if (Player.playerInstance.canMove==false)
+        if (Player.playerInstance.lockControls==true)
         {
             return;
         }
         ICommand moveCommand = new WalkCommand(player, movementDirection);
         moveCommand.Execute();
-        ICommand jumpCommand = new JumpCommand(player);
+        ICommand jumpCommand = new JumpCommand(player, movementDirection);
         jumpCommand.Execute();
+        ICommand cinematicJumpCommand = new CinematicJumpCommand(player);
+        cinematicJumpCommand.Execute();
     }
     /*private void ExecuteCommands()
     {

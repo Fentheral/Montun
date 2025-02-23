@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class Player : MonoBehaviour,ICommand
+public class Player : MonoBehaviour
 {
 
     //SINGLETON
@@ -39,6 +39,17 @@ public class Player : MonoBehaviour,ICommand
     public bool jumpEnabled;
     public float jumpCooldown;
     public float counterJump;
+    [SerializeField] float jumpSpeed;
+
+    /////////////////////////////////////////
+
+    /////////Varibles para el Salto Cinematico/////////
+
+    public bool cinematicJump;
+    public Transform targetPosition;
+    [SerializeField] float cinematicJumpSpeed;
+    public Coroutine cinematicJumpCoroutine;
+    public bool lockControls;
 
     /////////////////////////////////////////
 
@@ -66,9 +77,6 @@ public class Player : MonoBehaviour,ICommand
         }
 
         playerInstance = this;
-
-
-
         died = false;
         canMove = true;
         RB2D = GetComponent<Rigidbody2D>();
@@ -80,6 +88,9 @@ public class Player : MonoBehaviour,ICommand
         counter = 20;
         counterJump = 10;
         doTheySeeMe = false;
+        cinematicJump = false;
+        targetPosition = null;
+        lockControls = false;
     }
     private void Start()
     {
@@ -91,11 +102,11 @@ public class Player : MonoBehaviour,ICommand
         counter += Time.deltaTime;
         counterJump+= Time.deltaTime;
         walkCounter += Time.deltaTime;
+        SR.flipX = AxH < 0;
 
-        
 
         //Para el Idle, por ahora es provisional 
-        if (canMove == true)
+        if (canMove == true && lockControls==false)
         {
             AxV = Input.GetAxisRaw("Vertical");
             AxH = Input.GetAxisRaw("Horizontal");
@@ -149,14 +160,12 @@ public class Player : MonoBehaviour,ICommand
         Hide();
         StealthModeEnter();
         InputHandler.HandleInput(this, dir);
-        Jump();
+        
 
 
     }
 
-    private void FixedUpdate()
-    {
-    }
+  
 
     public void Walk(Vector2 direction)
     {
@@ -272,14 +281,68 @@ public class Player : MonoBehaviour,ICommand
             StartCoroutine(StealthModeExit());
         }
     }
-    public void Jump()
+    public void Jump(Vector2 dir)
     {
-        if (Input.GetKeyDown(KeyCode.Space) && counterJump >= jumpCooldown && canMove && jumpEnabled && died == false)
+        if (Input.GetKeyDown(KeyCode.Space) && counterJump >= jumpCooldown && canMove && jumpEnabled && !died && !cinematicJump && dir != Vector2.zero)
         {
-            Debug.Log("presione Salto");
+            // Se ejecuta el salto convencional
+            lockControls = true;
+            StartCoroutine(PerformJump(dir));  // Inicia la coroutine del salto
             counterJump = 0;
         }
     }
+    private IEnumerator PerformJump(Vector2 dir)
+    {
+        float jumpDuration = 1.5f;  
+        float elapsedTime = 0f;
+
+        Vector2 jumpDirection = dir; 
+
+        while (elapsedTime < jumpDuration )
+        {
+            transform.position += (Vector3)(jumpDirection * jumpSpeed * Time.deltaTime);
+            elapsedTime += Time.deltaTime;
+
+
+            yield return null; 
+        }
+
+        lockControls = false;
+        counterJump = 0;
+        Debug.Log("Fin del salto convencional");
+    }
+
+    public void StartCinematicJump()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && counterJump >= jumpCooldown && canMove && jumpEnabled && !died && cinematicJump && targetPosition != null)
+        {
+            lockControls = true;
+
+            if (cinematicJumpCoroutine == null) 
+            {
+                cinematicJumpCoroutine = StartCoroutine(CinematicJump()); 
+            }
+        }
+    }
+
+    private IEnumerator CinematicJump()
+    {
+        while (targetPosition != null && Vector2.Distance(transform.position, targetPosition.position) > 0.01f)
+        {
+
+            Vector2 dir = (targetPosition.position - transform.position).normalized;
+            transform.position = Vector2.MoveTowards(transform.position, targetPosition.position, cinematicJumpSpeed * Time.deltaTime);
+            Debug.Log("Presioné salto para cinemático");
+
+            yield return null;  
+        }
+
+        counterJump = 0; 
+
+        cinematicJumpCoroutine = null;
+        lockControls = false;
+    }
+
     IEnumerator StealthModeExit()
     {
         yield return new WaitForSeconds(6f);
@@ -299,23 +362,20 @@ public class Player : MonoBehaviour,ICommand
         }
     }
 
-    public void Execute()
-    {
-        throw new System.NotImplementedException();
-    }
+   
 }
 /*ToDo
- *deshabilitar los controles cuando estas en cinematica
- *Bloquear los demas controles
  *Deshabilitar las "hidden walls"
- *1 Verificar si el player esta parado en un jump point 
  *1 Verificar si el player esta mirando en la direccion correcta
- *1 Transportarlo con la animacion de salto
- *2 Moverse en direccion a la cual estoy faceando
  *2 Chocar contra objetos solidos sin buggearse
- *Rehabilitar controles
  *
  Done
+ *2 Moverse en direccion a la cual estoy faceando
+ *Rehabilitar controles
+ *1 Transportarlo con la animacion de salto
+ *1 Verificar si el player esta parado en un jump point 
+ *deshabilitar los controles cuando estas en cinematica
+ *Bloquear los demas controles
  *Iniciar cooldown
  *Verificar si tengo el cooldown disponible
  *Verificar si tengo la habilidad aprendida
